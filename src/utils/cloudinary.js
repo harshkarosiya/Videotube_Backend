@@ -14,8 +14,10 @@ import fs from "fs";
       const response = await cloudinary.uploader.upload(localFilePath, {
             resource_type: "auto"
         })
-        console.log("file is upload on clodinar", response.url)
-        console.log(response)
+        // console.log("file is upload on cloudinary", response.url)
+        // console.log(response.url)
+        fs.unlinkSync(localFilePath)
+        return response;
 
        } catch (error) {
          fs.unlinkSync(localFilePath)  // remove locally upload temperory file as the operation got failed
