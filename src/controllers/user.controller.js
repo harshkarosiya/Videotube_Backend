@@ -4,6 +4,7 @@ import {ApiError} from "../utils/apierrors.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/apiresponse.js";
 import jwt from "jsonwebtoken"
+import mongoose from "mongoose";
 
 
 
@@ -165,8 +166,8 @@ const loginUser = asyncHandler( async (req,res) =>{
 const logoutUser = asyncHandler( async (req, res) =>{
    await User.findByIdAndUpdate(req.user._id,
         {
-            $set: {
-                refreshToken: undefined
+            $unset: {
+                refreshToken: 1 // this remove the feild from the document
             }
         },
         {
@@ -238,7 +239,7 @@ const changeUserPassword = asyncHandler(async (req, res)=>{
 
    const user = await User.findById(req.user?._id)
 
-   const isPasswordCorrect = await isPasswordCorrect(oldPassword)
+   const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
 
    if (!isPasswordCorrect) {
     throw ApiError(400, "invalid password")
@@ -458,6 +459,11 @@ const getWatchHistory = asyncHandler(async(req, res) => {
         }
     ])
 
+    if (!user.length) {
+    throw new ApiError(404, "User not found or no watch history found");
+  }
+   
+
     return res
     .status(200)
     .json(
@@ -468,6 +474,7 @@ const getWatchHistory = asyncHandler(async(req, res) => {
         )
     )
 })
+
 
 export {
     registerUser,
